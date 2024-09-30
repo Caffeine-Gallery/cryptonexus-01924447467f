@@ -46,6 +46,7 @@ function displayNews(articles) {
     articles.forEach(article => {
         const articleElement = document.createElement('article');
         articleElement.innerHTML = `
+            <img src="${article.imageurl}" alt="${article.title}" onerror="this.onerror=null;this.src='placeholder.jpg';">
             <h2>${article.title}</h2>
             <p>${article.body}</p>
             <p>Categories: ${article.categories}</p>
