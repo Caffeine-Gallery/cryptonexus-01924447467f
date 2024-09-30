@@ -1,0 +1,16 @@
+type Article = 
+ record {
+   body: text;
+   category: text;
+   id: nat;
+   publishedAt: int;
+   source: text;
+   title: text;
+   url: text;
+ };
+service : {
+  addArticle: (text, text, text, int, text, text) -> (nat);
+  getAllArticles: () -> (vec Article) query;
+  getArticlesByCategory: (text) -> (vec Article) query;
+  getCategories: () -> (vec text) query;
+}
