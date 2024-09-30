@@ -116,12 +116,31 @@ function displayNews(articles) {
     });
 }
 
+function filterTodayNews(news) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return news.filter(article => {
+        const articleDate = new Date(article.published_on * 1000);
+        articleDate.setHours(0, 0, 0, 0);
+        return articleDate.getTime() === today.getTime();
+    });
+}
+
 async function init() {
     try {
         loadingElement.style.display = 'block';
         errorElement.style.display = 'none';
 
-        allNews = await fetchNews();
+        let fetchedNews = await fetchNews();
+        allNews = filterTodayNews(fetchedNews);
+        
+        if (allNews.length === 0) {
+            errorElement.textContent = 'No news available for today. Please check back later.';
+            errorElement.style.display = 'block';
+            loadingElement.style.display = 'none';
+            return;
+        }
+
         const categorizedNews = categorizeNews(allNews);
         
         displayCategories(categorizedNews);
