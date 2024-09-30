@@ -7,6 +7,20 @@ const categoriesNav = document.getElementById('categories');
 
 let allNews = [];
 
+const categoryIcons = {
+    'Blockchain': 'fas fa-link',
+    'Bitcoin': 'fab fa-bitcoin',
+    'Ethereum': 'fab fa-ethereum',
+    'Altcoin': 'fas fa-coins',
+    'Trading': 'fas fa-chart-line',
+    'Mining': 'fas fa-microchip',
+    'ICO': 'fas fa-rocket',
+    'Regulation': 'fas fa-gavel',
+    'Exchange': 'fas fa-exchange-alt',
+    'Wallet': 'fas fa-wallet',
+    'Default': 'fas fa-newspaper'
+};
+
 async function fetchNews() {
     try {
         const response = await fetch(NEWS_API_URL);
@@ -35,9 +49,10 @@ function categorizeNews(news) {
 }
 
 function displayCategories(categories) {
-    categoriesNav.innerHTML = '<a href="#" data-category="all">All</a>';
+    categoriesNav.innerHTML = '<a href="#" data-category="all"><i class="fas fa-globe"></i> All</a>';
     Object.keys(categories).forEach(category => {
-        categoriesNav.innerHTML += `<a href="#" data-category="${category}">${category}</a>`;
+        const icon = categoryIcons[category] || categoryIcons['Default'];
+        categoriesNav.innerHTML += `<a href="#" data-category="${category}"><i class="${icon}"></i> ${category}</a>`;
     });
 }
 
@@ -46,13 +61,17 @@ function displayNews(articles) {
     articles.forEach(article => {
         const articleElement = document.createElement('article');
         articleElement.innerHTML = `
-            <img src="${article.imageurl}" alt="${article.title}" onerror="this.onerror=null;this.src='placeholder.jpg';">
-            <h2>${article.title}</h2>
-            <p>${article.body}</p>
-            <p>Categories: ${article.categories}</p>
-            <p>Source: ${article.source}</p>
-            <p>Published: ${new Date(article.published_on * 1000).toLocaleString()}</p>
-            <a href="${article.url}" target="_blank">Read more</a>
+            <div class="article-image" style="background-image: url('${article.imageurl}')"></div>
+            <div class="article-content">
+                <h2>${article.title}</h2>
+                <p>${article.body.substring(0, 150)}...</p>
+                <p class="article-meta">
+                    <span><i class="fas fa-tag"></i> ${article.categories}</span>
+                    <span><i class="fas fa-user"></i> ${article.source}</span>
+                    <span><i class="far fa-clock"></i> ${new Date(article.published_on * 1000).toLocaleString()}</span>
+                </p>
+                <a href="${article.url}" target="_blank" class="read-more">Read more</a>
+            </div>
         `;
         newsContainer.appendChild(articleElement);
     });
@@ -70,9 +89,10 @@ async function init() {
         displayNews(allNews);
 
         categoriesNav.addEventListener('click', (event) => {
-            if (event.target.tagName === 'A') {
+            if (event.target.tagName === 'A' || event.target.parentElement.tagName === 'A') {
                 event.preventDefault();
-                const category = event.target.dataset.category;
+                const categoryElement = event.target.tagName === 'A' ? event.target : event.target.parentElement;
+                const category = categoryElement.dataset.category;
                 
                 if (category === 'all') {
                     displayNews(allNews);
