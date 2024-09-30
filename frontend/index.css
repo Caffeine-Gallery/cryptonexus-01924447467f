@@ -151,9 +151,11 @@ article p {
 .ticker-wrap {
     width: 100%;
     overflow: hidden;
-    background-color: #1a1a1a;
+    background-color: #ffffff;
     padding: 10px 0;
     margin-bottom: 20px;
+    border-top: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 .ticker {
@@ -174,8 +176,16 @@ article p {
 .ticker__item {
     display: inline-block;
     padding: 0 2rem;
-    color: white;
+    color: #333;
     font-size: 1rem;
+}
+
+.price-up {
+    color: #4caf50;
+}
+
+.price-down {
+    color: #f44336;
 }
 
 @-webkit-keyframes ticker {

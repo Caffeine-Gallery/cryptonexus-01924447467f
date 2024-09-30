@@ -1,5 +1,5 @@
 const NEWS_API_URL = 'https://min-api.cryptocompare.com/data/v2/news/?lang=EN';
-const PRICE_API_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,ripple,cardano,polkadot&vs_currencies=usd';
+const PRICE_API_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,ripple,cardano,polkadot&vs_currencies=usd&include_24hr_change=true';
 
 const loadingElement = document.getElementById('loading');
 const errorElement = document.getElementById('error');
@@ -53,10 +53,13 @@ async function fetchPrices() {
 
 function updatePriceTicker(prices) {
     let tickerContent = '';
-    for (const [coin, price] of Object.entries(prices)) {
-        tickerContent += `${coin.toUpperCase()}: $${price.usd.toFixed(2)} | `;
+    for (const [coin, data] of Object.entries(prices)) {
+        const priceChange = data.usd_24h_change;
+        const changeClass = priceChange >= 0 ? 'price-up' : 'price-down';
+        const changeIcon = priceChange >= 0 ? '▲' : '▼';
+        tickerContent += `<span class="ticker__item ${changeClass}">${coin.toUpperCase()}: $${data.usd.toFixed(2)} ${changeIcon} ${Math.abs(priceChange).toFixed(2)}%</span>`;
     }
-    tickerElement.textContent = tickerContent.slice(0, -3); // Remove the last ' | '
+    tickerElement.innerHTML = tickerContent;
 }
 
 function categorizeNews(news) {
