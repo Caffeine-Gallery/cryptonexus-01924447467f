@@ -39,9 +39,13 @@ const categoryIcons = {
 
 async function initializeCommentsActor() {
     const agent = new HttpAgent();
+    const canisterId = import.meta.env.VITE_COMMENTS_CANISTER_ID;
+    if (!canisterId) {
+        throw new Error("Comments canister ID is not set. Please check your environment variables.");
+    }
     commentsActor = Actor.createActor(commentsIdlFactory, {
         agent,
-        canisterId: process.env.COMMENTS_CANISTER_ID,
+        canisterId: canisterId,
     });
 }
 
@@ -281,7 +285,7 @@ async function init() {
     } catch (error) {
         console.error('Initialization error:', error);
         loadingElement.style.display = 'none';
-        errorElement.textContent = 'Failed to load news. Please try again later.';
+        errorElement.textContent = 'Failed to load news. Please check your internet connection and try again later.';
         errorElement.style.display = 'block';
     }
 }
