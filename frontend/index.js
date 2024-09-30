@@ -18,6 +18,7 @@ const categoryIcons = {
     'Regulation': 'fas fa-gavel',
     'Exchange': 'fas fa-exchange-alt',
     'Wallet': 'fas fa-wallet',
+    'ICP': 'fas fa-infinity',
     'Default': 'fas fa-newspaper'
 };
 
@@ -50,9 +51,19 @@ function categorizeNews(news) {
 
 function displayCategories(categories) {
     categoriesNav.innerHTML = '<a href="#" data-category="all"><i class="fas fa-globe"></i> All</a>';
+    
+    // Add ICP category if it exists
+    if (categories['ICP']) {
+        const icon = categoryIcons['ICP'];
+        categoriesNav.innerHTML += `<a href="#" data-category="ICP"><i class="${icon}"></i> ICP</a>`;
+    }
+    
+    // Add other categories
     Object.keys(categories).forEach(category => {
-        const icon = categoryIcons[category] || categoryIcons['Default'];
-        categoriesNav.innerHTML += `<a href="#" data-category="${category}"><i class="${icon}"></i> ${category}</a>`;
+        if (category !== 'ICP') {
+            const icon = categoryIcons[category] || categoryIcons['Default'];
+            categoriesNav.innerHTML += `<a href="#" data-category="${category}"><i class="${icon}"></i> ${category}</a>`;
+        }
     });
 }
 
