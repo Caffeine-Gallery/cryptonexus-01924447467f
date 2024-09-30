@@ -1,9 +1,11 @@
 const NEWS_API_URL = 'https://min-api.cryptocompare.com/data/v2/news/?lang=EN';
+const PRICE_API_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,ripple,cardano,polkadot&vs_currencies=usd';
 
 const loadingElement = document.getElementById('loading');
 const errorElement = document.getElementById('error');
 const newsContainer = document.getElementById('news-container');
 const categoriesNav = document.getElementById('categories');
+const tickerElement = document.querySelector('.ticker');
 
 let allNews = [];
 
@@ -34,6 +36,27 @@ async function fetchNews() {
         console.error('Error fetching news:', error);
         throw error;
     }
+}
+
+async function fetchPrices() {
+    try {
+        const response = await fetch(PRICE_API_URL);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching prices:', error);
+        throw error;
+    }
+}
+
+function updatePriceTicker(prices) {
+    let tickerContent = '';
+    for (const [coin, price] of Object.entries(prices)) {
+        tickerContent += `${coin.toUpperCase()}: $${price.usd.toFixed(2)} | `;
+    }
+    tickerElement.textContent = tickerContent.slice(0, -3); // Remove the last ' | '
 }
 
 function categorizeNews(news) {
@@ -114,6 +137,16 @@ async function init() {
                 }
             }
         });
+
+        // Initialize and update price ticker
+        const prices = await fetchPrices();
+        updatePriceTicker(prices);
+
+        // Update prices every 5 minutes
+        setInterval(async () => {
+            const updatedPrices = await fetchPrices();
+            updatePriceTicker(updatedPrices);
+        }, 300000);
 
         loadingElement.style.display = 'none';
     } catch (error) {
