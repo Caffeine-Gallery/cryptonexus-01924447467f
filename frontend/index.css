@@ -138,6 +138,45 @@ article p {
     background-color: #333333;
 }
 
+.comments-section {
+    margin-top: 1rem;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 1rem;
+}
+
+.comments-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.comments-list li {
+    background-color: #f9f9f9;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 5px;
+}
+
+.comment-form {
+    display: flex;
+    margin-top: 1rem;
+}
+
+.comment-form input {
+    flex-grow: 1;
+    padding: 0.5rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px 0 0 5px;
+}
+
+.comment-form button {
+    padding: 0.5rem 1rem;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    border: none;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+}
+
 #loading, #error {
     text-align: center;
     font-size: 1.2rem;
