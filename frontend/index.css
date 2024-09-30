@@ -25,10 +25,14 @@ nav a {
     margin-right: 1rem;
     text-decoration: none;
     color: #3498db;
+    padding: 5px 10px;
+    border-radius: 5px;
+    background-color: #ecf0f1;
 }
 
 nav a:hover {
-    text-decoration: underline;
+    background-color: #3498db;
+    color: #fff;
 }
 
 #news-container {
@@ -55,10 +59,14 @@ article a {
     margin-top: 1rem;
     color: #3498db;
     text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    background-color: #ecf0f1;
 }
 
 article a:hover {
-    text-decoration: underline;
+    background-color: #3498db;
+    color: #fff;
 }
 
 #loading, #error {
