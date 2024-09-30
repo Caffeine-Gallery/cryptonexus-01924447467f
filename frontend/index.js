@@ -6,8 +6,17 @@ const errorElement = document.getElementById('error');
 const newsContainer = document.getElementById('news-container');
 const categoriesNav = document.getElementById('categories');
 const tickerElement = document.querySelector('.ticker');
+const gridViewButton = document.getElementById('grid-view');
+const listViewButton = document.getElementById('list-view');
+const commentModal = document.getElementById('comment-modal');
+const commentArticleTitle = document.getElementById('comment-article-title');
+const commentsContainer = document.getElementById('comments-container');
+const commentForm = document.getElementById('comment-form');
+const commentInput = document.getElementById('comment-input');
 
 let allNews = [];
+let currentView = 'grid';
+let currentArticleId = null;
 
 const categoryIcons = {
     'Blockchain': 'fas fa-link',
@@ -78,13 +87,11 @@ function categorizeNews(news) {
 function displayCategories(categories) {
     categoriesNav.innerHTML = '<a href="#" data-category="all"><i class="fas fa-globe"></i> All</a>';
     
-    // Add ICP category if it exists
     if (categories['ICP']) {
         const icon = categoryIcons['ICP'];
         categoriesNav.innerHTML += `<a href="#" data-category="ICP"><i class="${icon}"></i> ICP</a>`;
     }
     
-    // Add other categories
     Object.keys(categories).forEach(category => {
         if (category !== 'ICP') {
             const icon = categoryIcons[category] || categoryIcons['Default'];
@@ -109,10 +116,20 @@ function displayNews(articles) {
                 <div class="article-tags">
                     ${article.categories.split('|').map(tag => `<span class="tag">${tag.trim()}</span>`).join('')}
                 </div>
-                <a href="${article.url}" target="_blank" class="read-more">Read more</a>
+                <div class="article-actions">
+                    <a href="${article.url}" target="_blank" class="read-more">Read more</a>
+                    <button class="comment-button" data-article-id="${article.id}"><i class="fas fa-comment"></i> Comments</button>
+                </div>
             </div>
         `;
         newsContainer.appendChild(articleElement);
+    });
+
+    document.querySelectorAll('.comment-button').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const articleId = event.target.closest('.comment-button').dataset.articleId;
+            openCommentModal(articleId);
+        });
     });
 }
 
@@ -124,6 +141,58 @@ function filterTodayNews(news) {
         articleDate.setHours(0, 0, 0, 0);
         return articleDate.getTime() === today.getTime();
     });
+}
+
+function switchView(view) {
+    currentView = view;
+    newsContainer.className = `${view}-view`;
+    if (view === 'grid') {
+        gridViewButton.classList.add('active');
+        listViewButton.classList.remove('active');
+    } else {
+        listViewButton.classList.add('active');
+        gridViewButton.classList.remove('active');
+    }
+    localStorage.setItem('preferredView', view);
+}
+
+function openCommentModal(articleId) {
+    currentArticleId = articleId;
+    const article = allNews.find(a => a.id === articleId);
+    commentArticleTitle.textContent = article.title;
+    displayComments(articleId);
+    commentModal.style.display = 'block';
+}
+
+function closeCommentModal() {
+    commentModal.style.display = 'none';
+    currentArticleId = null;
+}
+
+function displayComments(articleId) {
+    const comments = getCommentsForArticle(articleId);
+    commentsContainer.innerHTML = '';
+    comments.forEach(comment => {
+        const commentElement = document.createElement('div');
+        commentElement.classList.add('comment');
+        commentElement.textContent = comment;
+        commentsContainer.appendChild(commentElement);
+    });
+}
+
+function getCommentsForArticle(articleId) {
+    const allComments = JSON.parse(localStorage.getItem('comments') || '{}');
+    return allComments[articleId] || [];
+}
+
+function addComment(articleId, comment) {
+    const allComments = JSON.parse(localStorage.getItem('comments') || '{}');
+    if (!allComments[articleId]) {
+        allComments[articleId] = [];
+    }
+    allComments[articleId].push(comment);
+    localStorage.setItem('comments', JSON.stringify(allComments));
+    displayComments(articleId);
 }
 
 async function init() {
@@ -160,15 +229,36 @@ async function init() {
             }
         });
 
-        // Initialize and update price ticker
         const prices = await fetchPrices();
         updatePriceTicker(prices);
 
-        // Update prices every 5 minutes
         setInterval(async () => {
             const updatedPrices = await fetchPrices();
             updatePriceTicker(updatedPrices);
         }, 300000);
+
+        gridViewButton.addEventListener('click', () => switchView('grid'));
+        listViewButton.addEventListener('click', () => switchView('list'));
+
+        const preferredView = localStorage.getItem('preferredView') || 'grid';
+        switchView(preferredView);
+
+        commentForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const comment = commentInput.value.trim();
+            if (comment && currentArticleId) {
+                addComment(currentArticleId, comment);
+                commentInput.value = '';
+            }
+        });
+
+        document.querySelector('.close').addEventListener('click', closeCommentModal);
+
+        window.addEventListener('click', (event) => {
+            if (event.target === commentModal) {
+                closeCommentModal();
+            }
+        });
 
         loadingElement.style.display = 'none';
     } catch (error) {

@@ -15,9 +15,24 @@
         <h1>Crypto Daily News</h1>
     </header>
     <nav id="categories"></nav>
+    <div id="view-toggle">
+        <button id="grid-view" class="active"><i class="fas fa-th"></i></button>
+        <button id="list-view"><i class="fas fa-list"></i></button>
+    </div>
     <div id="loading">Loading news...</div>
     <div id="error" style="display: none;"></div>
-    <main id="news-container"></main>
+    <main id="news-container" class="grid-view"></main>
+    <div id="comment-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="comment-article-title"></h2>
+            <div id="comments-container"></div>
+            <form id="comment-form">
+                <textarea id="comment-input" placeholder="Type your comment here..." required></textarea>
+                <button type="submit">Submit Comment</button>
+            </form>
+        </div>
+    </div>
     <script type="module" src="index.js"></script>
 </body>
 </html>
