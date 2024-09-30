@@ -65,11 +65,13 @@ function displayNews(articles) {
             <div class="article-content">
                 <h2>${article.title}</h2>
                 <p>${article.body.substring(0, 150)}...</p>
-                <p class="article-meta">
-                    <span><i class="fas fa-tag"></i> ${article.categories}</span>
-                    <span><i class="fas fa-user"></i> ${article.source}</span>
-                    <span><i class="far fa-clock"></i> ${new Date(article.published_on * 1000).toLocaleString()}</span>
-                </p>
+                <div class="article-meta">
+                    <span class="article-author"><i class="fas fa-user"></i> ${article.source}</span>
+                    <span class="article-date"><i class="far fa-clock"></i> ${new Date(article.published_on * 1000).toLocaleString()}</span>
+                </div>
+                <div class="article-tags">
+                    ${article.categories.split('|').map(tag => `<span class="tag">${tag.trim()}</span>`).join('')}
+                </div>
                 <a href="${article.url}" target="_blank" class="read-more">Read more</a>
             </div>
         `;
