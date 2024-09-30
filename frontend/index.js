@@ -1,3 +1,6 @@
+import { Actor, HttpAgent } from "@dfinity/agent";
+import { idlFactory as commentsIdlFactory } from "./declarations/comments/comments.did.js";
+
 const NEWS_API_URL = 'https://min-api.cryptocompare.com/data/v2/news/?lang=EN';
 const PRICE_API_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,ripple,cardano,polkadot&vs_currencies=usd&include_24hr_change=true';
 
@@ -17,6 +20,7 @@ const commentInput = document.getElementById('comment-input');
 let allNews = [];
 let currentView = 'grid';
 let currentArticleId = null;
+let commentsActor;
 
 const categoryIcons = {
     'Blockchain': 'fas fa-link',
@@ -32,6 +36,14 @@ const categoryIcons = {
     'ICP': 'fas fa-infinity',
     'Default': 'fas fa-newspaper'
 };
+
+async function initializeCommentsActor() {
+    const agent = new HttpAgent();
+    commentsActor = Actor.createActor(commentsIdlFactory, {
+        agent,
+        canisterId: process.env.COMMENTS_CANISTER_ID,
+    });
+}
 
 async function fetchNews() {
     try {
@@ -156,11 +168,11 @@ function switchView(view) {
     localStorage.setItem('preferredView', view);
 }
 
-function openCommentModal(articleId) {
+async function openCommentModal(articleId) {
     currentArticleId = articleId;
     const article = allNews.find(a => a.id === articleId);
     commentArticleTitle.textContent = article.title;
-    displayComments(articleId);
+    await displayComments(articleId);
     commentModal.style.display = 'block';
 }
 
@@ -169,36 +181,41 @@ function closeCommentModal() {
     currentArticleId = null;
 }
 
-function displayComments(articleId) {
-    const comments = getCommentsForArticle(articleId);
+async function displayComments(articleId) {
+    const comments = await getCommentsForArticle(articleId);
     commentsContainer.innerHTML = '';
     comments.forEach(comment => {
         const commentElement = document.createElement('div');
         commentElement.classList.add('comment');
-        commentElement.textContent = comment;
+        commentElement.textContent = comment.content;
         commentsContainer.appendChild(commentElement);
     });
 }
 
-function getCommentsForArticle(articleId) {
-    const allComments = JSON.parse(localStorage.getItem('comments') || '{}');
-    return allComments[articleId] || [];
+async function getCommentsForArticle(articleId) {
+    try {
+        return await commentsActor.getComments(articleId);
+    } catch (error) {
+        console.error('Error fetching comments:', error);
+        return [];
+    }
 }
 
-function addComment(articleId, comment) {
-    const allComments = JSON.parse(localStorage.getItem('comments') || '{}');
-    if (!allComments[articleId]) {
-        allComments[articleId] = [];
+async function addComment(articleId, content) {
+    try {
+        await commentsActor.addComment(articleId, content);
+        await displayComments(articleId);
+    } catch (error) {
+        console.error('Error adding comment:', error);
     }
-    allComments[articleId].push(comment);
-    localStorage.setItem('comments', JSON.stringify(allComments));
-    displayComments(articleId);
 }
 
 async function init() {
     try {
         loadingElement.style.display = 'block';
         errorElement.style.display = 'none';
+
+        await initializeCommentsActor();
 
         let fetchedNews = await fetchNews();
         allNews = filterTodayNews(fetchedNews);
@@ -243,11 +260,11 @@ async function init() {
         const preferredView = localStorage.getItem('preferredView') || 'grid';
         switchView(preferredView);
 
-        commentForm.addEventListener('submit', (event) => {
+        commentForm.addEventListener('submit', async (event) => {
             event.preventDefault();
             const comment = commentInput.value.trim();
             if (comment && currentArticleId) {
-                addComment(currentArticleId, comment);
+                await addComment(currentArticleId, comment);
                 commentInput.value = '';
             }
         });

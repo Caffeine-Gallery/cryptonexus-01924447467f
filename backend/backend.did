@@ -1,16 +1,12 @@
-type Article = 
+type Comment = 
  record {
-   body: text;
-   category: text;
+   articleId: text;
+   content: text;
    id: nat;
-   publishedAt: int;
-   source: text;
-   title: text;
-   url: text;
+   timestamp: int;
  };
 service : {
-  addArticle: (text, text, text, int, text, text) -> (nat);
-  getAllArticles: () -> (vec Article) query;
-  getArticlesByCategory: (text) -> (vec Article) query;
-  getCategories: () -> (vec text) query;
+  addComment: (text, text) -> (nat);
+  getAllComments: () -> (vec Comment) query;
+  getComments: (text) -> (vec Comment) query;
 }

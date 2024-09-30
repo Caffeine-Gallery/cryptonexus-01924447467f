@@ -1,8 +1,8 @@
 export const idlFactory = ({ IDL }) => {
   const Comment = IDL.Record({
     'id' : IDL.Nat,
-    'content' : IDL.Text,
     'articleId' : IDL.Text,
+    'content' : IDL.Text,
     'timestamp' : IDL.Int,
   });
   return IDL.Service({

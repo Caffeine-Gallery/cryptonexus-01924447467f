@@ -1,79 +1,57 @@
 import Bool "mo:base/Bool";
 import Hash "mo:base/Hash";
-import Int "mo:base/Int";
 
 import Array "mo:base/Array";
-import Buffer "mo:base/Buffer";
 import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
 import Nat "mo:base/Nat";
-import Option "mo:base/Option";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import Order "mo:base/Order";
+import Int "mo:base/Int";
 
 actor {
-    // Define the structure for a news article
-    public type Article = {
-        id: Nat;
-        title: Text;
-        body: Text;
-        category: Text;
-        publishedAt: Int;
-        source: Text;
-        url: Text;
-    };
+  type Comment = {
+    id: Nat;
+    articleId: Text;
+    content: Text;
+    timestamp: Int;
+  };
 
-    private stable var nextId: Nat = 0;
-    private stable var articlesEntries: [(Nat, Article)] = [];
-    private var articles = HashMap.HashMap<Nat, Article>(0, Nat.equal, Nat.hash);
+  private stable var nextCommentId : Nat = 0;
+  private var comments = HashMap.HashMap<Nat, Comment>(0, Nat.equal, Nat.hash);
 
-    system func preupgrade() {
-        articlesEntries := Iter.toArray(articles.entries());
+  public func addComment(articleId: Text, content: Text) : async Nat {
+    let id = nextCommentId;
+    let comment : Comment = {
+      id = id;
+      articleId = articleId;
+      content = content;
+      timestamp = Time.now();
     };
+    comments.put(id, comment);
+    nextCommentId += 1;
+    id
+  };
 
-    system func postupgrade() {
-        articles := HashMap.fromIter<Nat, Article>(articlesEntries.vals(), 1, Nat.equal, Nat.hash);
-    };
+  public query func getComments(articleId: Text) : async [Comment] {
+    let articleComments = Array.filter<Comment>(Iter.toArray(comments.vals()), func (c: Comment) : Bool {
+      c.articleId == articleId
+    });
+    Array.sort(articleComments, func (a: Comment, b: Comment) : Order.Order {
+      Int.compare(b.timestamp, a.timestamp)
+    })
+  };
 
-    // Add a new article
-    public func addArticle(title: Text, body: Text, category: Text, publishedAt: Int, source: Text, url: Text) : async Nat {
-        let id = nextId;
-        nextId += 1;
-        let article: Article = {
-            id;
-            title;
-            body;
-            category;
-            publishedAt;
-            source;
-            url;
-        };
-        articles.put(id, article);
-        id
-    };
+  public query func getAllComments() : async [Comment] {
+    Iter.toArray(comments.vals())
+  };
 
-    // Get all articles
-    public query func getAllArticles() : async [Article] {
-        Iter.toArray(articles.vals())
-    };
+  system func preupgrade() {
+    // Implement if needed
+  };
 
-    // Get articles by category
-    public query func getArticlesByCategory(category: Text) : async [Article] {
-        let filtered = Buffer.Buffer<Article>(0);
-        for (article in articles.vals()) {
-            if (Text.equal(article.category, category)) {
-                filtered.add(article);
-            };
-        };
-        Buffer.toArray(filtered)
-    };
-
-    // Get categories
-    public query func getCategories() : async [Text] {
-        let categoriesSet = HashMap.HashMap<Text, Bool>(0, Text.equal, Text.hash);
-        for (article in articles.vals()) {
-            categoriesSet.put(article.category, true);
-        };
-        Iter.toArray(categoriesSet.keys())
-    };
+  system func postupgrade() {
+    // Implement if needed
+  };
 }
